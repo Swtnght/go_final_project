@@ -22,34 +22,19 @@ type taskResp struct {
 	ID string `json:"id"`
 }
 
-func taskHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		getTaskHandler(w, r)
-	case http.MethodPost:
-		addTaskHandler(w, r)
-	case http.MethodPut:
-		putTaskHandler(w, r)
-	case http.MethodDelete:
-		delTaskHandler(w, r)
-	default:
-		errorJson(w, "неподдерживаемый метод запроса")
-	}
-}
-
 func getTaskHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
 	if id == "" {
-		errorJson(w, "Не указан идентификатор")
+		errorJson(w, http.StatusBadRequest, "Не указан идентификатор")
 		return
 	}
 
 	task, err := db.GetTask(id)
 	if err != nil {
-		errorJson(w, "Задача не найдена")
+		errorJson(w, http.StatusNotFound, "Задача не найдена")
 		return
 	}
-	writeJson(w, task)
+	writeJson(w, http.StatusOK, task)
 }
 
 func validateTask(req *taskReq) error {
@@ -85,39 +70,39 @@ func validateTask(req *taskReq) error {
 func delTaskHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
 	if id == "" {
-		errorJson(w, "Не указан идентификатор")
+		errorJson(w, http.StatusBadRequest, "Не указан идентификатор")
 		return
 	}
 
 	err := db.DeleteTask(id)
 	if err != nil {
-		errorJson(w, "Задача не найдена")
+		errorJson(w, http.StatusNotFound, "Задача не найдена")
 		return
 	}
-	writeJson(w, map[string]any{})
+	writeJson(w, http.StatusOK, map[string]any{})
 }
 
 func putTaskHandler(w http.ResponseWriter, r *http.Request) {
 	var req taskReq
 	var buf bytes.Buffer
 	if _, err := buf.ReadFrom(r.Body); err != nil {
-		errorJson(w, "некорректный запрос")
+		errorJson(w, http.StatusBadRequest, "некорректный запрос")
 		return
 	}
 	err := json.Unmarshal(buf.Bytes(), &req)
 	if err != nil {
-		errorJson(w, "некорректный запрос")
+		errorJson(w, http.StatusBadRequest, "некорректный запрос")
 		return
 	}
 
 	if req.ID == "" {
-		errorJson(w, "Не указан идентификатор")
+		errorJson(w, http.StatusBadRequest, "Не указан идентификатор")
 		return
 	}
 
 	err = validateTask(&req)
 	if err != nil {
-		errorJson(w, err.Error())
+		errorJson(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -130,8 +115,8 @@ func putTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err = db.UpdateTask(&task)
 	if err != nil {
-		errorJson(w, "Задача не найдена")
+		errorJson(w, http.StatusNotFound, "Задача не найдена")
 		return
 	}
-	writeJson(w, map[string]any{})
+	writeJson(w, http.StatusOK, map[string]any{})
 }

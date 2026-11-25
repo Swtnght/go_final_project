@@ -13,7 +13,8 @@ const (
 )
 
 func Run() error {
-	api.Init()
-	http.Handle("/", http.FileServer(http.Dir(webDir)))
-	return http.ListenAndServe(":"+strconv.Itoa(Port), nil)
+	mux := http.NewServeMux()
+	mux.Handle("/api/", api.Init())
+	mux.Handle("/", http.FileServer(http.Dir(webDir)))
+	return http.ListenAndServe(":"+strconv.Itoa(Port), mux)
 }

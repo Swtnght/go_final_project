@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -75,5 +76,7 @@ func nextDateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	fmt.Fprint(w, next)
+	if _, err := fmt.Fprint(w, next); err != nil {
+		log.Printf("ошибка записи ответа: %v", err)
+	}
 }

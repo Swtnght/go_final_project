@@ -34,8 +34,8 @@ func Init(dbFile string) error {
 	}
 
 	if install {
-		_, err = db.Exec(schema)
-		if err != nil {
+		if _, err = db.Exec(schema); err != nil {
+			db.Close()
 			return err
 		}
 	}

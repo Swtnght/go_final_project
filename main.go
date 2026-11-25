@@ -13,6 +13,7 @@ func main() {
 	}
 	defer db.Close()
 	if err := server.Run(); err != nil {
+		db.Close()
 		log.Fatal(err)
 	}
 }
